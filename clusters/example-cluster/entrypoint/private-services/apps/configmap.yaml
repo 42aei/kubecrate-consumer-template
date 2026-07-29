@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-private-service
+  namespace: private-services
+data:
+  message: "Replace this fixture with private application-service manifests."
