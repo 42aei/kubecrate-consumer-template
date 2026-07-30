@@ -90,7 +90,7 @@ def validate_kustomizations(root: Path, errors: list[str]) -> None:
             depends = spec.get("dependsOn") or []
             require(any(d.get("name") == "kubecrate-vanilla" for d in depends if isinstance(d, dict)), errors, f"{rel(path, root)}: private-services must depend on kubecrate-vanilla")
             require(isinstance(kpath, str) and "/private-services/" in kpath, errors, f"{rel(path, root)}: private-services path must stay under private-services")
-            require((spec.get("sourceRef") or {}).get("name") == "flux-system-sync", errors, f"{rel(path, root)}: private-services must source the private Flux root")
+            require((spec.get("sourceRef") or {}).get("name") == "flux-system", errors, f"{rel(path, root)}: private-services must source the official Flux bootstrap root GitRepository flux-system")
     require(bool(vanilla_paths), errors, "No kubecrate-vanilla Kustomization found")
     require(bool(private_paths), errors, "No private-services Kustomization found")
 
@@ -101,6 +101,7 @@ def validate_fixture_isolation(root: Path, errors: list[str]) -> None:
     identities = []
     tags = []
     private_namespaces = []
+    fixture_owned_terms: dict[Path, set[str]] = {}
     for fixture in fixtures:
         clusters = sorted((fixture / "clusters").iterdir()) if (fixture / "clusters").exists() else []
         require(len(clusters) == 1, errors, f"{rel(fixture, root)}: fixture must contain exactly one cluster")
@@ -108,13 +109,27 @@ def validate_fixture_isolation(root: Path, errors: list[str]) -> None:
             continue
         cluster = clusters[0]
         identities.append(cluster.name)
+        owned_terms = {fixture.name, cluster.name}
         source = cluster / "entrypoint" / "kubecrate" / "source.yaml"
         if source.exists():
             tag = (load_yaml(source).get("spec") or {}).get("ref", {}).get("tag")
             tags.append(tag)
         ns = cluster / "entrypoint" / "private-services" / "apps" / "namespace.yaml"
         if ns.exists():
-            private_namespaces.append(load_yaml(ns).get("metadata", {}).get("name"))
+            namespace = load_yaml(ns).get("metadata", {}).get("name")
+            private_namespaces.append(namespace)
+            if namespace:
+                owned_terms.add(str(namespace))
+        for yaml_path in fixture.rglob("*.yaml"):
+            doc = load_yaml(yaml_path)
+            if not isinstance(doc, dict):
+                continue
+            metadata = doc.get("metadata") or {}
+            for value in (metadata.get("name"), metadata.get("namespace")):
+                if value:
+                    owned_terms.add(str(value))
+        shared_flux_terms = {"flux-system", "kubecrate-upstream", "kubecrate-vanilla", "private-services"}
+        fixture_owned_terms[fixture] = owned_terms - shared_flux_terms
     require(len(set(identities)) == len(identities), errors, f"Fixture cluster identities must be distinct: {identities}")
     require(len(set(private_namespaces)) == len(private_namespaces), errors, f"Fixture private namespaces must be distinct: {private_namespaces}")
     require(bool(tags) and len(set(tags)) == 1, errors, f"Fixtures must share one Kubecrate tag before upgrade tests: {tags}")
@@ -124,7 +139,8 @@ def validate_fixture_isolation(root: Path, errors: list[str]) -> None:
         for other in fixtures:
             if other == fixture:
                 continue
-            require(other.name not in text, errors, f"{rel(fixture, root)} leaks other fixture name {other.name}")
+            leaked_terms = sorted(term for term in fixture_owned_terms.get(other, set()) if term and term in text)
+            require(not leaked_terms, errors, f"{rel(fixture, root)} leaks peer fixture identities/resources from {other.name}: {leaked_terms}")
 
 
 def validate_no_obvious_credentials(root: Path, errors: list[str]) -> None:
