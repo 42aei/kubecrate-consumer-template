@@ -9,7 +9,7 @@ This template uses the official Flux bootstrap flow. The included `scripts/boots
 - Flux CLI installed from the official Flux documentation
 - GitHub access that can create or update the private consumer repository
 - this repository configured and committed with placeholders replaced
-- `python3 scripts/validate-consumer-template.py .` passing locally
+- the [render check](../README.md#validate-before-bootstrap-or-pr-review) passing locally
 
 ## Configure placeholders
 

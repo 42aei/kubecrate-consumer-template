@@ -1,0 +1,15 @@
+name: Render
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          docker run --rm -v "$PWD":/r:ro --entrypoint sh registry.k8s.io/kustomize/kustomize:v5.4.3 -c 'cd /r; rc=0; for p in $(find . -name kustomization.yaml -not -path "./.git/*" -exec dirname {} \;); do kustomize build "$p" >/dev/null || rc=1; done; exit $rc'

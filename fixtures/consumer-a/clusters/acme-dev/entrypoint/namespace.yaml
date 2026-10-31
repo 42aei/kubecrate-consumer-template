@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: acme-dev-system
-  labels:
-    app.kubernetes.io/part-of: kubecrate-consumer

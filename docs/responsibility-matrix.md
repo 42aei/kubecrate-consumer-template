@@ -3,7 +3,7 @@
 | Area | Kubecrate maintainers | Template maintainers | Cluster owners | Application owners |
 | --- | --- | --- | --- | --- |
 | Vanilla composition | Own stable path, release notes, compatibility, and upstream validation | Link to the stable path without copying implementation | Choose which exact tag to consume | Rely on the provided platform contract |
-| Template repository | Review minimal structure and docs for consumer safety | Own template files, examples, and static validation | Copy once into a private repository and customize placeholders | Use the private-services path for workloads |
+| Template repository | Review minimal structure and docs for consumer safety | Own template files, examples, and the render check | Copy once into a private repository and customize placeholders | Use the private-services path for workloads |
 | Consumer private repository | Do not own private identity or secrets | Do not receive automatic updates after creation | Own repo visibility, branch policy, cluster identity, Git credentials, and bootstrap | Own application manifests, domains, and service configuration |
 | Flux bootstrap-generated files | Define upstream expectations only | Document generated vs hand-maintained boundaries | Own bootstrap execution and review generated output | Avoid editing generated bootstrap files for app changes |
 | Git credentials and secrets | Do not receive consumer credentials | Do not include credentials in examples | Own deploy keys, tokens, kubeconfigs, and secret-manager wiring | Own application secret declarations and rotation needs |

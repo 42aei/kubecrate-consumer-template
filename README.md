@@ -10,7 +10,7 @@ Use it when a cluster owner wants an independent private repository for cluster 
 - a Kubecrate `GitRepository` pinned to one exact upstream SemVer tag
 - a Flux `Kustomization` that reconciles Kubecrate's stable Vanilla composition from that tag
 - a separate private-services path that depends on Vanilla
-- small examples and static tests proving isolated consumer repos
+- small examples
 - documentation for bootstrap, updates, rollback, recovery, and decommissioning
 
 ## What this template does not own
@@ -30,10 +30,8 @@ clusters/example-cluster/entrypoint/                  Flux root for one concrete
 clusters/example-cluster/entrypoint/private-services/ Private application-service path
 clusters/example-cluster/entrypoint/kubecrate/        Kubecrate source and Vanilla reconciliation
 scripts/bootstrap-flux.sh                             Thin official Flux bootstrap wrapper
-scripts/validate-consumer-template.py      Static/render/isolation validation
-fixtures/consumer-a/                       Independent private-repo fixture A
-fixtures/consumer-b/                       Independent private-repo fixture B
-docs/                                      Consumer operating docs
+.github/workflows/render.yaml                         Render check run on every pull request
+docs/                                                 Consumer operating docs
 ```
 
 ## Quick start
@@ -61,10 +59,10 @@ The wrapper calls `flux bootstrap github`. Review `docs/bootstrap.md` before run
 ## Validate before bootstrap or PR review
 
 ```sh
-python3 scripts/validate-consumer-template.py .
+docker run --rm -v "$PWD":/r:ro --entrypoint sh registry.k8s.io/kustomize/kustomize:v5.4.3 -c 'cd /r; rc=0; for p in $(find . -name kustomization.yaml -not -path "./.git/*" -exec dirname {} \;); do kustomize build "$p" >/dev/null || rc=1; done; exit $rc'
 ```
 
-The validator checks that every consumer root pins Kubecrate to an exact SemVer tag, avoids floating refs, keeps private services separate from Vanilla, and that the two fixtures have distinct identities while sharing the same Kubecrate version.
+This command renders every `kustomization.yaml` in the repository with kustomize and requires Docker locally. The workflow `.github/workflows/render.yaml` runs the same command on every pull request. It does not prove bootstrap or reconciliation on a cluster.
 
 ## Documentation
 
@@ -78,4 +76,4 @@ The validator checks that every consumer root pins Kubecrate to an exact SemVer 
 
 Do not commit credentials, kubeconfigs, domain-specific secrets, deploy keys, personal identity, or generated Flux private keys. Keep those in the cluster Secret created by Flux bootstrap or in your chosen secret manager.
 
-Do not bootstrap a real cluster from this repository until the placeholders have been replaced and the static validator passes.
+Do not bootstrap a real cluster from this repository until the placeholders have been replaced and the render check passes.

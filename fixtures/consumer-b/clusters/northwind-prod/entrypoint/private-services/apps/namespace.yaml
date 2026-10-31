@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: northwind-apps
-  labels:
-    app.kubernetes.io/part-of: northwind-private-services
