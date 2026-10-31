@@ -23,7 +23,7 @@ python3 scripts/validate-consumer-template.py .
 - Do not copy `platform-services/` or `application-services/` from Kubecrate into the consumer repository.
 - Do not change another consumer's repository to add or update this service.
 - Do not commit credentials or raw Secret values.
-- Keep private service reconciliation sourced from the private Flux root, not from `kubecrate-upstream`.
+- Keep private service reconciliation sourced from the private Flux root, not from `flux-system-sync`.
 
 ## Example
 

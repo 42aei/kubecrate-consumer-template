@@ -11,6 +11,6 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: flux-system-sync
+    name: flux-system
   timeout: 5m0s
   wait: true
