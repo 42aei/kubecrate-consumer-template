@@ -26,12 +26,13 @@ Template files are copied by GitHub when you create your private repository. Lat
 ## Repository layout
 
 ```text
-clusters/example-cluster/entrypoint/                  Flux root for one concrete cluster
-clusters/example-cluster/entrypoint/private-services/ Private application-service path
-clusters/example-cluster/entrypoint/kubecrate/        Kubecrate source and Vanilla reconciliation
-scripts/bootstrap-flux.sh                             Thin official Flux bootstrap wrapper
-.github/workflows/render.yaml                         Render check run on every pull request
-docs/                                                 Consumer operating docs
+clusters/example-cluster/entrypoint/                                    Flux root for one concrete cluster
+clusters/example-cluster/entrypoint/private-services/                   Private application-service path
+clusters/example-cluster/entrypoint/private-services/apps/example-app/  Example app (podinfo); copy or delete
+clusters/example-cluster/entrypoint/kubecrate/                          Kubecrate source and Vanilla reconciliation
+scripts/bootstrap-flux.sh                                               Thin official Flux bootstrap wrapper
+.github/workflows/render.yaml                                           Render check run on every pull request
+docs/                                                                   Consumer operating docs
 ```
 
 ## Quick start
