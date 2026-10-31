@@ -24,6 +24,8 @@ The Kubecrate version must be an exact immutable SemVer tag, for example `v0.3.0
 
 ## Bootstrap
 
+`flux-system/` does not exist in the repository before bootstrap. Do not add it with an empty or placeholder `kustomization.yaml`: bootstrap builds an existing `kustomization.yaml` there instead of generating its own.
+
 Use either the official command directly:
 
 ```sh
@@ -45,7 +47,18 @@ or the template wrapper:
   --path clusters/<cluster>/entrypoint
 ```
 
-Flux writes bootstrap-generated files under the selected path and creates in-cluster Flux Secrets. Review and commit generated repository files intentionally. Do not copy generated private keys or Secret values out of the cluster.
+Flux writes bootstrap-generated files under the selected path and creates in-cluster Flux Secrets. Review what bootstrap committed. Do not copy generated private keys or Secret values out of the cluster.
+
+## Add flux-system to the root
+
+Bootstrap commits to the remote, so pull first. Add `- flux-system` to `resources` in `clusters/<cluster>/entrypoint/kustomization.yaml`:
+
+```yaml
+resources:
+  - flux-system
+```
+
+Commit and push the change. Otherwise Flux does not manage its own manifests. Once added, this line must stay: removing it makes Flux prune itself.
 
 ## Git credentials and secrets
 
@@ -57,7 +70,7 @@ Application secrets belong in your chosen secret manager and are projected into 
 
 ## Verify reconciliation
 
-After bootstrap, verify the target context and Flux resources before making application changes:
+After bootstrap and after adding `flux-system` to the root, verify the target context and Flux resources before making application changes:
 
 ```sh
 kubectl config current-context

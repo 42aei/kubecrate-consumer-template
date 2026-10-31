@@ -57,6 +57,8 @@ docs/                                                                   Consumer
 
 The wrapper calls `flux bootstrap github`. Review `docs/bootstrap.md` before running it.
 
+6. After bootstrap, pull and add `- flux-system` to `resources` in `clusters/example-cluster/entrypoint/kustomization.yaml`, then commit and push. See [Add flux-system to the root](docs/bootstrap.md#add-flux-system-to-the-root).
+
 ## Validate before bootstrap or PR review
 
 ```sh
