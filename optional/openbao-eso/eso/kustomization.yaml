@@ -1,4 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - openbao-auth.yaml
+  - service-account.yaml
+  - tokenreview-binding.yaml
+  - cluster-secret-store.yaml
