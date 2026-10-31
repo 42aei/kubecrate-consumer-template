@@ -6,11 +6,13 @@ The template reconciles them through `clusters/<cluster>/entrypoint/private-serv
 
 ## Add a service
 
-1. Add manifests under `clusters/<cluster>/entrypoint/private-services/apps/`.
-2. Reference them from `clusters/<cluster>/entrypoint/private-services/apps/kustomization.yaml`.
+1. Use one folder per app under `clusters/<cluster>/entrypoint/private-services/apps/`. Copy or delete `apps/example-app/`, the podinfo Deployment and Service example.
+2. Reference each app folder from `apps/kustomization.yaml`.
 3. Keep namespaces, names, domains, and secret references unique to this consumer repository.
 4. Run the [render check](../README.md#validate-before-bootstrap-or-pr-review).
 5. Open a private repository PR and review the rendered diff before merging.
+
+The `private-services` Flux Kustomization has `wait: true` and `timeout: 5m0s`, so Flux waits for the app to become healthy and reports the Kustomization failed if it does not (for example, an image that cannot be pulled).
 
 ## Rules
 
