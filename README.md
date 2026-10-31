@@ -57,6 +57,8 @@ docs/                                                                   Consumer
 
 The wrapper calls `flux bootstrap github`. Review `docs/bootstrap.md` before running it.
 
+6. [Add `flux-system` to the root](docs/bootstrap.md#add-flux-system-to-the-root-after-bootstrap) after bootstrap.
+
 ## Validate before bootstrap or PR review
 
 ```sh

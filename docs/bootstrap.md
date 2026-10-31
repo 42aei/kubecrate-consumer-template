@@ -47,6 +47,10 @@ or the template wrapper:
 
 Flux writes bootstrap-generated files under the selected path and creates in-cluster Flux Secrets. Review and commit generated repository files intentionally. Do not copy generated private keys or Secret values out of the cluster.
 
+## Add flux-system to the root after bootstrap
+
+Bootstrap generates `clusters/<cluster>/entrypoint/flux-system/`, so the template does not list it. Right after bootstrap, add `- flux-system` under `resources` in `clusters/<cluster>/entrypoint/kustomization.yaml` and merge that change. Until then, Flux does not manage its own manifests.
+
 ## Git credentials and secrets
 
 Flux bootstrap may use your GitHub token or CLI authentication to configure the repository. That token stays in your local environment and must not be committed.
