@@ -59,7 +59,7 @@ def validate_git_repositories(root: Path, errors: list[str]) -> list[tuple[Path,
         if url == "https://github.com/42aei/kubecrate.git":
             tag = ref.get("tag")
             kubecrate_sources.append((path, str(tag)))
-            require(name == "kubecrate-upstream", errors, f"{rel(path, root)}: Kubecrate GitRepository must be named kubecrate-upstream")
+            require(name == "flux-system-sync", errors, f"{rel(path, root)}: Kubecrate GitRepository must be named flux-system-sync")
             require(set(ref.keys()) == {"tag"}, errors, f"{rel(path, root)}: Kubecrate source must use only ref.tag")
             if tag != PLACEHOLDER_TAG:
                 require(bool(SEMVER_RE.match(str(tag))), errors, f"{rel(path, root)}: Kubecrate tag is not exact SemVer: {tag!r}")
@@ -84,13 +84,13 @@ def validate_kustomizations(root: Path, errors: list[str]) -> None:
         if name == "kubecrate-vanilla":
             vanilla_paths.append(path)
             require(kpath == "./compositions/vanilla/entrypoint", errors, f"{rel(path, root)}: Vanilla path must be ./compositions/vanilla/entrypoint")
-            require((spec.get("sourceRef") or {}).get("name") == "kubecrate-upstream", errors, f"{rel(path, root)}: Vanilla must source kubecrate-upstream")
+            require((spec.get("sourceRef") or {}).get("name") == "flux-system-sync", errors, f"{rel(path, root)}: Vanilla must source flux-system-sync")
         if name == "private-services":
             private_paths.append(path)
             depends = spec.get("dependsOn") or []
             require(any(d.get("name") == "kubecrate-vanilla" for d in depends if isinstance(d, dict)), errors, f"{rel(path, root)}: private-services must depend on kubecrate-vanilla")
             require(isinstance(kpath, str) and "/private-services/" in kpath, errors, f"{rel(path, root)}: private-services path must stay under private-services")
-            require((spec.get("sourceRef") or {}).get("name") == "flux-system-sync", errors, f"{rel(path, root)}: private-services must source the private Flux root")
+            require((spec.get("sourceRef") or {}).get("name") == "flux-system", errors, f"{rel(path, root)}: private-services must source the private Flux root")
     require(bool(vanilla_paths), errors, "No kubecrate-vanilla Kustomization found")
     require(bool(private_paths), errors, "No private-services Kustomization found")
 

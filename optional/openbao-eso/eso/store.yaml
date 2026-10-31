@@ -1,0 +1,20 @@
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: openbao
+spec:
+  provider:
+    vault:
+      server: https://ob.int.anov.io
+      path: bedrock-kv
+      version: v2
+      auth:
+        kubernetes:
+          mountPath: kubernetes/bedrock-REPLACE_WITH_CLUSTER
+          role: eso-read
+          serviceAccountRef:
+            name: eso-openbao-auth
+            namespace: core-external-secrets-operator
+            audiences:
+              - openbao
+              - https://kubernetes.default.svc.cluster.local

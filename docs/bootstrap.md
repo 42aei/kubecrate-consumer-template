@@ -68,10 +68,14 @@ flux get kustomizations -A
 Expected shape:
 
 - the private Flux root reconciles from `clusters/<cluster>/entrypoint`
-- `kubecrate-upstream` points at `https://github.com/42aei/kubecrate.git`
+- `flux-system-sync` points at `https://github.com/42aei/kubecrate.git`
 - `kubecrate-vanilla` reconciles `./compositions/vanilla/entrypoint` from the pinned Kubecrate tag
 - `private-services` waits for `kubecrate-vanilla` before reconciling your private application services
 
 ## Generated versus hand-maintained files
 
 Flux bootstrap-generated files are owned by the bootstrap flow and your cluster owner. Hand-maintained consumer files are owned by your repository maintainers. Keep this distinction during reviews: do not edit generated files casually, and do not hide hand-maintained application changes inside generated bootstrap output.
+
+## Connect External Secrets Operator to OpenBao (Bedrock tenants)
+
+For a Bedrock tenant, first run the OpenBao steps in Bedrock's `docs/new-tenant-cluster-runbook.md`. Then copy `optional/openbao-eso/` to `clusters/<cluster>/entrypoint/platform-services/`, replace `REPLACE_WITH_CLUSTER` with the tenant ID, and add `platform-services/eso-kustomization.yaml` to the root `kustomization.yaml`. Secrets live in OpenBao under `bedrock-kv/tenants/<cluster>/`; the store reads nothing else.

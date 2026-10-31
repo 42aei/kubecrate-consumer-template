@@ -1,0 +1,16 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: eso-openbao
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: kubecrate-vanilla
+  interval: 10m0s
+  path: ./clusters/REPLACE_WITH_CLUSTER/entrypoint/platform-services/eso
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m0s
+  wait: true

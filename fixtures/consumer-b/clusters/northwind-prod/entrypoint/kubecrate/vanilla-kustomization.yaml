@@ -9,6 +9,6 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: kubecrate-upstream
+    name: flux-system-sync
   timeout: 10m0s
   wait: true

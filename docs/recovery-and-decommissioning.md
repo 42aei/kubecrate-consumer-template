@@ -19,7 +19,7 @@ Common failure boundaries:
 - private services failed after Vanilla became ready
 - application Secret or domain configuration is missing from the consumer repository
 
-Fix the smallest owned boundary. If `kubecrate-upstream` or Vanilla itself fails for a released tag, open an upstream Kubecrate issue or PR with evidence. If `private-services` fails, keep the fix in your private repository.
+Fix the smallest owned boundary. If `flux-system-sync` or Vanilla itself fails for a released tag, open an upstream Kubecrate issue or PR with evidence. If `private-services` fails, keep the fix in your private repository.
 
 ## Suspend or pause private services
 
