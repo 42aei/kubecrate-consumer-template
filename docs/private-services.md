@@ -9,12 +9,7 @@ The template reconciles them through `clusters/<cluster>/entrypoint/private-serv
 1. Add manifests under `clusters/<cluster>/entrypoint/private-services/apps/`.
 2. Reference them from `clusters/<cluster>/entrypoint/private-services/apps/kustomization.yaml`.
 3. Keep namespaces, names, domains, and secret references unique to this consumer repository.
-4. Run validation:
-
-```sh
-python3 scripts/validate-consumer-template.py .
-```
-
+4. Run the [render check](../README.md#validate-before-bootstrap-or-pr-review).
 5. Open a private repository PR and review the rendered diff before merging.
 
 ## Rules
@@ -24,7 +19,3 @@ python3 scripts/validate-consumer-template.py .
 - Do not change another consumer's repository to add or update this service.
 - Do not commit credentials or raw Secret values.
 - Keep private service reconciliation sourced from the private Flux root, not from `flux-system-sync`.
-
-## Example
-
-The fixture ConfigMaps under `fixtures/consumer-a/` and `fixtures/consumer-b/` demonstrate two unrelated consumers with distinct cluster names, namespaces, and private services while sharing one Kubecrate tag. They are static proof fixtures, not recommended production workloads.
