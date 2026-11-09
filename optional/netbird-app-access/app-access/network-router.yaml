@@ -1,0 +1,9 @@
+apiVersion: netbird.io/v1alpha1
+kind: NetworkRouter
+metadata:
+  name: apps
+  namespace: core-netbird-operator
+spec:
+  # Bedrock creates the DNS zone; the operator finds it by name, equal to its domain.
+  dnsZoneRef:
+    name: REPLACE_WITH_PRIVATE_DOMAIN

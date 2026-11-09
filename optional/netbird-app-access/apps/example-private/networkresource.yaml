@@ -1,0 +1,14 @@
+apiVersion: netbird.io/v1alpha1
+kind: NetworkResource
+metadata:
+  name: example-private
+  namespace: private-services
+spec:
+  networkRouterRef:
+    name: apps
+    namespace: core-netbird-operator
+  serviceRef:
+    name: example-private
+  # Join the group Bedrock creates, by name.
+  groups:
+    - name: bedrock-REPLACE_WITH_CLUSTER-apps
