@@ -1,0 +1,17 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: netbird-app-access
+  namespace: flux-system
+spec:
+  # Dependency Ready includes the API key sync and operator HelmRelease health checks.
+  dependsOn:
+    - name: netbird-api-key
+  interval: 10m0s
+  path: ./clusters/REPLACE_WITH_CLUSTER/entrypoint/platform-services/netbird/app-access
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m0s
+  wait: true

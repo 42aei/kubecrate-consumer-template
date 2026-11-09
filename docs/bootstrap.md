@@ -85,3 +85,7 @@ Flux bootstrap-generated files are owned by the bootstrap flow and your cluster 
 ## Connect External Secrets Operator to OpenBao (Bedrock tenants)
 
 For a Bedrock tenant, first run the OpenBao steps in Bedrock's `docs/new-tenant-cluster-runbook.md`. Then copy `optional/openbao-eso/` to `clusters/<cluster>/entrypoint/platform-services/`, replace `REPLACE_WITH_CLUSTER` with the tenant ID, and add `platform-services/eso-kustomization.yaml` to the root `kustomization.yaml`. Secrets live in OpenBao under `bedrock-kv/tenants/<cluster>/`; the store reads nothing else.
+
+## Enable NetBird app access (Bedrock tenants)
+
+Follow [NetBird app access](netbird-app-access.md) to publish private or public apps from a Bedrock tenant cluster. This optional binding needs the OpenBao step above and a Kubecrate tag of at least `v0.5.0`.

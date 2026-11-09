@@ -12,6 +12,8 @@ The template reconciles them through `clusters/<cluster>/entrypoint/private-serv
 4. Run the [render check](../README.md#validate-before-bootstrap-or-pr-review).
 5. Open a private repository PR and review the rendered diff before merging.
 
+For apps that need NetBird access (private or public), follow [NetBird app access](netbird-app-access.md).
+
 The `private-services` Flux Kustomization has `wait: true` and `timeout: 5m0s`, so Flux waits for the app to become healthy and reports the Kustomization failed if it does not (for example, an image that cannot be pulled).
 
 ## Rules

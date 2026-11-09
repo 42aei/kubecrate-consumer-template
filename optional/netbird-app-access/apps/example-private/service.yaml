@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-private
+  namespace: private-services
+  labels:
+    app.kubernetes.io/name: example-private
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: example-private
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
