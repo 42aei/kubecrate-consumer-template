@@ -31,6 +31,7 @@ clusters/example-cluster/entrypoint/private-services/                   Private 
 clusters/example-cluster/entrypoint/private-services/apps/example-app/  Example app (podinfo); copy or delete
 clusters/example-cluster/entrypoint/kubecrate/                          Kubecrate source and Vanilla reconciliation
 optional/netbird-app-access/                                            Optional NetBird app access for Bedrock tenants
+optional/openobserve/                                                   Optional OpenObserve backend (S3 telemetry, CloudNativePG metadata)
 scripts/bootstrap-flux.sh                                               Thin official Flux bootstrap wrapper
 .github/workflows/render.yaml                                           Render check run on every pull request
 docs/                                                                   Consumer operating docs
@@ -73,6 +74,7 @@ This command renders every `kustomization.yaml` in the repository with kustomize
 - `docs/bootstrap.md` - prerequisites, bootstrap, generated files, verification, and Git credential handling
 - `docs/private-services.md` - add and verify private application services
 - `docs/netbird-app-access.md` - optional NetBird app access for Bedrock tenants (copy steps, publish private and public apps, remove)
+- `docs/openobserve.md` - optional OpenObserve backend (S3 telemetry, CloudNativePG metadata, OpenBao credentials)
 - `docs/updating-kubecrate.md` - update, rollback, and compatibility workflow
 - `docs/recovery-and-decommissioning.md` - recover failed reconciliation and remove a cluster safely
 - `docs/responsibility-matrix.md` - who owns which files and actions

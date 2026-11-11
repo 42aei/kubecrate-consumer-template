@@ -1,0 +1,15 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: openobserve-meta
+  namespace: openobserve
+spec:
+  instances: 1
+  storage:
+    size: 5Gi
+    # No storageClass: the cluster default is used. Set storageClass here if there is none.
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: openobserve-meta-backups

@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openobserve
+  namespace: openobserve
+spec:
+  interval: 30m0s
+  releaseName: openobserve
+  targetNamespace: openobserve
+  timeout: 10m0s
+  chart:
+    spec:
+      chart: openobserve-standalone
+      version: 1.1.6
+      sourceRef:
+        kind: HelmRepository
+        name: openobserve
+  values:
+    image:
+      oss:
+        tag: "v1.1.2"
+    auth:
+      # Root user email and password come from this Secret (ExternalSecret openobserve-root-user).
+      # Do not set any other auth.* value: they end up in the Helm release Secret and in the
+      # chart Secret in plaintext.
+      existingRootUserSecret:
+        name: openobserve-root-user
+    config:
+      ZO_LOCAL_MODE: "true"
+      ZO_LOCAL_MODE_STORAGE: "s3"
+      ZO_META_STORE: "postgres"
+      ZO_S3_PROVIDER: "s3"
+      ZO_S3_SERVER_URL: "https://REPLACE_WITH_S3_ENDPOINT"
+      ZO_S3_REGION_NAME: "REPLACE_WITH_S3_REGION"
+      ZO_S3_BUCKET_NAME: "REPLACE_WITH_TELEMETRY_BUCKET"
+      ZO_COMPACT_DATA_RETENTION_DAYS: "90"
+      ZO_TELEMETRY: "false"
+      # In MB. The result and aggregation caches default to 10% of it.
+      ZO_DISK_CACHE_MAX_SIZE: "4096"
+    persistence:
+      size: 10Gi
+      # Uses the cluster default storage class. Set persistence.storageClass here if there is none.
+    # Starting values, not measurements.
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        memory: 2Gi
+    # Credentials reach the container only through secretKeyRef. A container's env entries take
+    # precedence over envFrom, so they override the empty ZO_S3_* keys in the chart Secret.
+    extraEnv:
+      - name: ZO_ROOT_USER_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: openobserve-root-user
+            key: ZO_ROOT_USER_TOKEN
+      - name: ZO_S3_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: openobserve-s3
+            key: ZO_S3_ACCESS_KEY
+      - name: ZO_S3_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: openobserve-s3
+            key: ZO_S3_SECRET_KEY
+      # Secret created by CloudNativePG for the Cluster openobserve-meta (key uri).
+      - name: ZO_META_POSTGRES_DSN
+        valueFrom:
+          secretKeyRef:
+            name: openobserve-meta-app
+            key: uri
