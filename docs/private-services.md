@@ -14,6 +14,8 @@ The template reconciles them through `clusters/<cluster>/entrypoint/private-serv
 
 For apps that need NetBird access (private or public), follow [NetBird app access](netbird-app-access.md).
 
+For a self-hosted OpenObserve telemetry backend, follow [OpenObserve backend](openobserve.md). Its UI has no SSO and must be reached privately; use the NetBird pattern above.
+
 The `private-services` Flux Kustomization has `wait: true` and `timeout: 5m0s`, so Flux waits for the app to become healthy and reports the Kustomization failed if it does not (for example, an image that cannot be pulled).
 
 ## Rules
