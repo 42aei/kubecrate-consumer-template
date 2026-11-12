@@ -1,0 +1,19 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: openobserve-collector
+  namespace: flux-system
+spec:
+  # openobserve: the backend (optional/openobserve/backend/), the target of the collectors.
+  # opentelemetry-operator: the Kustomization that reconciles the OpenTelemetry Operator and its CRDs.
+  dependsOn:
+    - name: openobserve
+    - name: opentelemetry-operator
+  interval: 10m0s
+  path: ./clusters/REPLACE_WITH_CLUSTER/entrypoint/private-services/openobserve/collector
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 10m0s
+  wait: true
