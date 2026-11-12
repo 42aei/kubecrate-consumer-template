@@ -1,4 +1,4 @@
-# OpenObserve backend
+# OpenObserve
 
 One self-hosted OpenObserve OSS instance. Telemetry is kept in S3-compatible object storage, metadata in a CloudNativePG Postgres cluster with Barman Cloud backups, and every credential is delivered by External Secrets Operator from OpenBao. This binding is optional and is not enabled in `clusters/example-cluster/`. Collectors that ship metrics, logs, events and traces to it are an optional second step, described in [Collectors](#collectors).
 
@@ -16,6 +16,8 @@ A single instance on node-local disk is the accepted availability trade-off. The
 | `ScheduledBackup` | `openobserve-meta-daily` | A backup every day at 02:00 (and one immediately on creation). |
 
 The requests (250m CPU, 512Mi memory) and the memory limit (2Gi) are starting values, not measurements.
+
+The metadata Cluster has no PodDisruptionBudget (`enablePDB: false`), so a node drain is not blocked. The database is down until its pod runs again.
 
 ## Prerequisites
 
@@ -114,8 +116,8 @@ Optional. The collectors ship node and pod metrics, Kubernetes workload state, c
 | Component | Where | What it collects |
 | --- | --- | --- |
 | OpenTelemetry Operator | Namespace `opentelemetry-operator`. Collector image `opentelemetry-collector-contrib` `0.163.1`; webhook certificates from cert-manager. | Nothing itself: it runs the `OpenTelemetryCollector` resources below. |
-| Agent | DaemonSet `openobserve-collector-agent` in `openobserve`, one pod on every node. | Container stdout/stderr logs (`filelog` on `/var/log/pods`), node metrics (`hostmetrics`) and kubelet pod and container metrics (`kubeletstats`). |
-| Gateway | StatefulSet `openobserve-collector-gateway` in `openobserve`. | Prometheus scrapes (cAdvisor, kube-state-metrics, CoreDNS, API server, scheduler, controller manager, pods by annotation), Kubernetes events (`k8sobjects/events`, stream `k8s_events`), and the OTLP receivers for application metrics and traces. |
+| Agent | `OpenTelemetryCollector` `openobserve-collector-agent`; the operator runs it as DaemonSet `openobserve-collector-agent-collector` in `openobserve`, one pod on every node. | Container stdout/stderr logs (`filelog` on `/var/log/pods`), node metrics (`hostmetrics`) and kubelet pod and container metrics (`kubeletstats`). |
+| Gateway | `OpenTelemetryCollector` `openobserve-collector-gateway`; the operator runs it as StatefulSet `openobserve-collector-gateway-collector` in `openobserve`. | Prometheus scrapes (cAdvisor, kube-state-metrics, CoreDNS, API server, scheduler, controller manager, pods by annotation), Kubernetes events (`k8sobjects/events`, stream `k8s_events`), and the OTLP receivers for application metrics and traces. |
 | kube-state-metrics | Deployment in `kube-system`. | Kubernetes workload state (deployments, pods, nodes, jobs and so on), without `secrets` and `configmaps`. |
 
 The collection interval is 30s (the chart default).
@@ -144,7 +146,7 @@ env:
     value: http://openobserve-collector-gateway-collector.openobserve.svc:4318
 ```
 
-This does not make an uninstrumented application emit traces. The application must use an OpenTelemetry SDK and be configured as above. Automatic instrumentation is turned off (`autoinstrumentation.enabled: false`) and there is no `Instrumentation` resource.
+The gateway accepts OTLP metrics and traces only, so an application should also set `OTEL_LOGS_EXPORTER=none`. This does not make an uninstrumented application emit traces. The application must use an OpenTelemetry SDK and be configured as above. Automatic instrumentation is turned off (`autoinstrumentation.enabled: false`) and there is no `Instrumentation` resource.
 
 ### Credential
 
@@ -170,7 +172,7 @@ The chart's ClusterRole `openobserve-collector`, bound to ServiceAccount `openob
 | `discovery.k8s.io` | `endpointslices` | `get`, `list`, `watch` |
 | `events.k8s.io` | `events` | `get`, `list`, `watch` |
 
-There is no access to `secrets`. kube-state-metrics has its own ClusterRole with `list` and `watch` on the resources of its `--resources` list, which omits `secrets` and `configmaps`.
+The ClusterRole has no rule on `secrets`. It does include `get` on `nodes/proxy`, which opens the kubelet API, and `get`/`list` on `pods`, which returns pod env values in plain text. kube-state-metrics has its own ClusterRole with `list` and `watch` on the resources of its `--resources` list, which omits `secrets` and `configmaps`.
 
 The agent also mounts the node read-only: `/` (as `/hostfs`), `/var/log` and `/var/lib/docker/containers`. The chart mounts the first two writable; a post-render patch on the HelmRelease makes them read-only, and fails instead of marking the wrong mount if a chart upgrade reorders the mounts. The chart mounts `/var/lib/docker/containers` read-only itself. The agent tolerates every taint, so it also runs on control-plane nodes.
 
