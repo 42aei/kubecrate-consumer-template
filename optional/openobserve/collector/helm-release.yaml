@@ -1,0 +1,158 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openobserve-collector
+  namespace: openobserve
+spec:
+  interval: 30m0s
+  releaseName: openobserve-collector
+  targetNamespace: openobserve
+  timeout: 10m0s
+  chart:
+    spec:
+      chart: openobserve-collector
+      version: 0.8.3
+      sourceRef:
+        kind: HelmRepository
+        name: openobserve
+  values:
+    k8sCluster: REPLACE_WITH_CLUSTER
+    # This block replaces the chart's default exporters, which carry a placeholder Authorization
+    # header. The credential is the env var OPENOBSERVE_AUTH, injected from Secret
+    # openobserve-collector-auth by the post-render patch below. Never put a credential in these
+    # values: it would end up in the Helm release Secret and in the OpenTelemetryCollector spec.
+    exporters:
+      otlphttp/openobserve:
+        endpoint: http://openobserve-openobserve-standalone.openobserve.svc.cluster.local:5080/api/default
+        headers:
+          Authorization: ${env:OPENOBSERVE_AUTH}
+      otlphttp/openobserve_k8s_events:
+        endpoint: http://openobserve-openobserve-standalone.openobserve.svc.cluster.local:5080/api/default
+        headers:
+          Authorization: ${env:OPENOBSERVE_AUTH}
+          stream-name: k8s_events
+    kube-state-metrics:
+      # The chart default list without secrets and configmaps. The gateway's keep-list drops those
+      # metrics anyway, so this only removes kube-state-metrics' cluster-wide list access to them.
+      collectors:
+        - certificatesigningrequests
+        - cronjobs
+        - daemonsets
+        - deployments
+        - endpoints
+        - horizontalpodautoscalers
+        - ingresses
+        - jobs
+        - leases
+        - limitranges
+        - mutatingwebhookconfigurations
+        - namespaces
+        - networkpolicies
+        - nodes
+        - persistentvolumeclaims
+        - persistentvolumes
+        - poddisruptionbudgets
+        - pods
+        - replicasets
+        - replicationcontrollers
+        - resourcequotas
+        - services
+        - statefulsets
+        - storageclasses
+        - validatingwebhookconfigurations
+        - volumeattachments
+    autoinstrumentation:
+      enabled: false
+    # Requests and limits are starting values, not measurements. Each memory limit is above the
+    # memory_limiter limit_mib (agent 512, gateway 1024), so the limiter refuses data before the
+    # kernel kills the pod.
+    agent:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          memory: 640Mi
+    gateway:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 1280Mi
+      receivers:
+        # Explicit hosts make the gateway reachable from other pods instead of relying on the
+        # collector's or the operator's default host.
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+        # Setting a chart receiver to null removes it. Only k8sobjects/events (pipeline
+        # logs/k8s_events) stays, so no ConfigMap, pod spec or RBAC object leaves the cluster.
+        k8sobjects/pods: null
+        k8sobjects/nodes: null
+        k8sobjects/deployments: null
+        k8sobjects/services: null
+        k8sobjects/namespaces: null
+        k8sobjects/pvcs: null
+        k8sobjects/daemonsets: null
+        k8sobjects/statefulsets: null
+        k8sobjects/ingresses: null
+        k8sobjects/jobs: null
+        k8sobjects/cronjobs: null
+        k8sobjects/persistentvolumes: null
+        k8sobjects/serviceaccounts: null
+        k8sobjects/roles: null
+        k8sobjects/clusterroles: null
+        k8sobjects/rolebindings: null
+        k8sobjects/clusterrolebindings: null
+        k8sobjects/hpa: null
+        k8sobjects/crds: null
+        k8sobjects/storageclasses: null
+        k8sobjects/configmaps: null
+        k8sobjects/networkpolicies: null
+        k8sobjects/endpoints: null
+        k8sobjects/replicasets: null
+        k8sobjects/limitranges: null
+        k8sobjects/resourcequotas: null
+      service:
+        pipelines:
+          logs/k8s_events:
+            receivers:
+              - k8sobjects/events
+  # The test operations make the patch fail, instead of marking the wrong mount, if a chart upgrade
+  # reorders the mounts. The agent only reads / and /var/log; the chart mounts them writable.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: opentelemetry.io
+              kind: OpenTelemetryCollector
+            patch: |
+              - op: add
+                path: /spec/env/-
+                value:
+                  name: OPENOBSERVE_AUTH
+                  valueFrom:
+                    secretKeyRef:
+                      name: openobserve-collector-auth
+                      key: authorization
+          - target:
+              group: opentelemetry.io
+              kind: OpenTelemetryCollector
+              name: openobserve-collector-agent
+            patch: |
+              - op: test
+                path: /spec/volumeMounts/0/name
+                value: hostfs
+              - op: add
+                path: /spec/volumeMounts/0/readOnly
+                value: true
+              - op: test
+                path: /spec/volumeMounts/1/name
+                value: varlog
+              - op: add
+                path: /spec/volumeMounts/1/readOnly
+                value: true
