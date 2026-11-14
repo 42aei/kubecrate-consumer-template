@@ -37,6 +37,9 @@ spec:
       ZO_TELEMETRY: "false"
       # In MB. The result and aggregation caches default to 10% of it.
       ZO_DISK_CACHE_MAX_SIZE: "4096"
+      # In MB. In local mode the memtable cap is 25% of the memory limit (512 MiB at 2Gi);
+      # the 512 MB default lets one file fill it, so ingestion fails with MemoryTableOverflowError.
+      ZO_MAX_FILE_SIZE_IN_MEMORY: "128"
     persistence:
       size: 10Gi
       # Uses the cluster default storage class. Set persistence.storageClass here if there is none.
